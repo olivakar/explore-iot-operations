@@ -1,0 +1,98 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mssql-secret
+type: Opaque
+data:
+  SA_PASSWORD: WW91clN0cm9uZ1Bhc3N3b3JkMTIzIQ==  # Base64 encoded "YourStrongPassword123!"
+  sqlpassword: WW91clN0cm9uZ1Bhc3N3b3JkMTIzIQ==  # Base64 encoded "YourStrongPassword123!"
+  sqlusername: c2E=
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mssql-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+        - containerPort: 1433
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mssql-secret
+              key: SA_PASSWORD
+        - name: MSSQL_PID
+          value: "Express"
+        - name: SQL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mssql-secret
+              key: sqlusername
+        - name: SQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mssql-secret
+              key: sqlpassword
+        volumeMounts:
+        - name: mssqldb
+          mountPath: /var/opt/mssql
+        - name: mssql-config
+          mountPath: /usr/config
+        command: ["/bin/bash"]
+        args: 
+        - "-c"
+        - |
+          /opt/mssql/bin/sqlservr &
+          pid=$!
+          sleep 30
+          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/config/setup.sql
+          wait $pid
+      volumes:
+      - name: mssqldb
+        persistentVolumeClaim:
+          claimName: mssql-data
+      - name: mssql-config
+        configMap:
+          name: mssql-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-service
+spec:
+  selector:
+    app: mssql
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433
+  type: ClusterIP

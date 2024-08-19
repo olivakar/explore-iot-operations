@@ -14,8 +14,16 @@ namespace ContextualDataIngestor
             switch (endpointType)
             {
                 case DataSourceType.Sql:
+                    IAuthStrategy sqlAuthStrategy = CreateAuthStrategy(parameters);
+                    var retrievalReq = new SqlRetrievalConfig
+                    {
+                        ServerName = parameters["SqlServerName"] ?? throw new ArgumentException("Server name variable is not set for SQL."),
+                        DatabaseName = parameters["SqlDatabaseName"] ?? throw new ArgumentException("Database name variable is not set for SQL."),
+                        TableName = parameters["SqlTableName"] ?? throw new ArgumentException("Table variable is not set for SQL.")
+                    };
                     return new SqlDataRetriever(
-                        parameters["DbConnectionString"] ?? throw new ArgumentException("Connection string variable is not set for SQL.")
+                        retrievalReq,
+                        sqlAuthStrategy
                     );
                 case DataSourceType.Http:
                     IAuthStrategy httpAuthStrategy = CreateAuthStrategy(parameters);
@@ -53,7 +61,11 @@ namespace ContextualDataIngestor
                         Password = parameters["HttpPassword"] ?? throw new ArgumentException("password variable is not set for basic auth strategy in HTTP")
                     };
                 case AuthType.Sqlbasic:
-                    return new SqlBasicAuth();
+                    return new SqlBasicAuth
+                    {
+                        Username = parameters["SqlUsername"] ?? throw new ArgumentException("username variable is not set for basic auth strategy in SQL"),
+                        Password = parameters["SqlPassword"] ?? throw new ArgumentException("password variable is not set for basic auth strategy in SQL")
+                    };
                 default:
                     throw new ArgumentException("Invalid auth type");
             }
