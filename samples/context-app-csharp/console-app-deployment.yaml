@@ -23,20 +23,20 @@ spec:
         - name: HTTP_USERNAME
           valueFrom:
             secretKeyRef:
-              name: console-app-credentials
+              name: console-app-secret
               key: username
         - name: HTTP_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: console-app-credentials
+              name: console-app-secret
               key: password
         - name: SQL_USERNAME
           valueFrom:
             secretKeyRef:
-              name: console-app-credentials
+              name: console-app-secret
               key: sqlusername
         - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: console-app-credentials
+              name: console-app-secret
               key: sqlpassword
