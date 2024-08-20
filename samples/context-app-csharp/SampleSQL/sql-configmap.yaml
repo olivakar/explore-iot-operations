@@ -5,6 +5,8 @@ metadata:
 data:
   setup.sql: |
     PRINT 'Starting setup script';
+    USE [master];
+    GO
     IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'MySampleDB')
     BEGIN
         CREATE DATABASE MySampleDB;
@@ -56,6 +58,9 @@ data:
         PRINT 'Modified login for $(APP_USER) to set default database to MySampleDB';
     END
     GO
+    PRINT 'Granting CONNECT SQL to $(APP_USER)';
+    GRANT CONNECT SQL TO [$(APP_USER)];
+    GO
     USE [MySampleDB];
     PRINT 'Switched to MySampleDB database for user creation/modification';
     GO
@@ -79,9 +84,6 @@ data:
             PRINT '$(APP_USER) is already a member of db_owner role';
         END
     END
-    GO
-    GRANT CONNECT SQL TO [$(APP_USER)];
-    PRINT 'Granted CONNECT SQL to $(APP_USER)';
     GO
     PRINT 'Verifying $(APP_USER) permissions:';
     EXEC sp_helprotect @username = '$(APP_USER)';
