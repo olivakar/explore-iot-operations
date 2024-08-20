@@ -8,14 +8,15 @@ data:
     IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'MySampleDB')
     BEGIN
         CREATE DATABASE MySampleDB;
-        PRINT 'Created MySampleDB';
+        PRINT 'Created MySampleDB database';
     END
     ELSE
     BEGIN
-        PRINT 'MySampleDB already exists';
+        PRINT 'MySampleDB database already exists';
     END
     GO
     USE MySampleDB;
+    PRINT 'Switched to MySampleDB database';
     GO
     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CountryMeasurements')
     BEGIN
@@ -41,21 +42,24 @@ data:
     END
     GO
     USE [master];
+    PRINT 'Switched to master database';
     GO
-    PRINT 'Attempting to create login for $(APP_USER)';
+    PRINT 'Attempting to create or modify login for $(APP_USER)';
     IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(APP_USER)')
     BEGIN
-        CREATE LOGIN [$(APP_USER)] WITH PASSWORD = '$(APP_PASSWORD)';
-        PRINT 'Created login for $(APP_USER)';
+        CREATE LOGIN [$(APP_USER)] WITH PASSWORD = '$(APP_PASSWORD)', DEFAULT_DATABASE = [MySampleDB];
+        PRINT 'Created login for $(APP_USER) with default database MySampleDB';
     END
     ELSE
     BEGIN
-        PRINT 'Login for $(APP_USER) already exists';
+        ALTER LOGIN [$(APP_USER)] WITH DEFAULT_DATABASE = [MySampleDB];
+        PRINT 'Modified login for $(APP_USER) to set default database to MySampleDB';
     END
     GO
     USE [MySampleDB];
+    PRINT 'Switched to MySampleDB database for user creation/modification';
     GO
-    PRINT 'Attempting to create user for $(APP_USER)';
+    PRINT 'Attempting to create or modify user for $(APP_USER)';
     IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$(APP_USER)')
     BEGIN
         CREATE USER [$(APP_USER)] FOR LOGIN [$(APP_USER)];
@@ -64,11 +68,23 @@ data:
     END
     ELSE
     BEGIN
-        PRINT 'User for $(APP_USER) already exists';
+        PRINT 'User for $(APP_USER) already exists, ensuring db_owner role membership';
+        IF IS_ROLEMEMBER('db_owner', '$(APP_USER)') = 0
+        BEGIN
+            ALTER ROLE db_owner ADD MEMBER [$(APP_USER)];
+            PRINT 'Added $(APP_USER) to db_owner role';
+        END
+        ELSE
+        BEGIN
+            PRINT '$(APP_USER) is already a member of db_owner role';
+        END
     END
     GO
     GRANT CONNECT SQL TO [$(APP_USER)];
     PRINT 'Granted CONNECT SQL to $(APP_USER)';
+    GO
+    PRINT 'Verifying $(APP_USER) permissions:';
+    EXEC sp_helprotect @username = '$(APP_USER)';
     GO
     PRINT 'Setup script completed';
   mssql.conf: |
