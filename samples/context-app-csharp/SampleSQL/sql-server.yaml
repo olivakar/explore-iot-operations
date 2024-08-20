@@ -47,16 +47,6 @@ spec:
             secretKeyRef:
               name: mssql-secret
               key: SA_PASSWORD
-        - name: APP_USER
-          valueFrom:
-            secretKeyRef:
-              name: mssql-secret
-              key: APP_USER
-        - name: APP_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mssql-secret
-              key: APP_PASSWORD
         volumeMounts:
         - name: mssqldb
           mountPath: /var/opt/mssql
@@ -70,7 +60,7 @@ spec:
           /opt/mssql/bin/sqlservr &
           pid=$!
           sleep 60
-          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -v APP_USER=$APP_USER,APP_PASSWORD=$APP_PASSWORD -i /usr/config/setup.sql -C
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/config/setup.sql -C
           if [ $? -ne 0 ]; then
             echo "Setup script failed"
             exit 1

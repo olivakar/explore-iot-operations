@@ -87,3 +87,17 @@ Currently this service works on username and password authentication.
 	Retrieve data from at source.
 	Store data in Distributed State Store.
 	```
+
+For SQL endpoint, the following steps need to be followed:
+```bash
+info: Program[0]
+      Retrieve data from at source.
+Connected to the database.
+info: Program[0]
+      Store data in Distributed State Store
+info: Program[0]
+      Successfully set key quality with value { "country" : "us" , "viscosity" : 0.50, "sweetness" : 0.80, "particle_size" : 0.70, "overall" : 0.40 }
+      { "country" : "fr" , "viscosity" : 0.60, "sweetness" : 0.85, "particle_size" : 0.75, "overall" : 0.45 }
+      { "country" : "jp" , "viscosity" : 0.53, "sweetness" : 0.83, "particle_size" : 0.73, "overall" : 0.43 }
+      { "country" : "uk" , "viscosity" : 0.51, "sweetness" : 0.81, "particle_size" : 0.71, "overall" : 0.41 }
+```
