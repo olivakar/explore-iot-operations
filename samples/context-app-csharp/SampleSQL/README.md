@@ -1,6 +1,4 @@
-```bash
- kubectl exec -it sqlserver-deployment-84f6cbf78b-cgqwq -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P 'YourStrongPassword123!' -C
- ```
+
  
 if set up script was okay
  ```bash
@@ -56,6 +54,10 @@ Setup script completed
 Set SA_PASSWORD ENV var before verications
 ```bash
 SA_PASSWORD=YourStrongPassword123!
+```
+Verifly that sa can log in. This will open a SQL command prompt). Type `QUIT` to exit the prompt.
+```bash
+kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P $SA_PASSWORD -C
 ```
 
 Verify database creation
@@ -116,10 +118,9 @@ Before next steps creat a password for the app user and set it as an ENV var in 
 APP_PASSWORD=NewComplexP@ssw0rd123$
 ```
 
-```bash
 Create user on server
 ```bash
-kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q "CREATE LOGIN [sampleuser] WITH PASSWORD = 'NewComplexP@ssw0rd123$'; SELECT name FROM sys.server_principals WHERE name = 'sampleuser';" -C
+kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q "CREATE LOGIN [sampleuser] WITH PASSWORD = N'$APP_PASSWORD'; SELECT name FROM sys.server_principals WHERE name = 'sampleuser';" -C
 
 name
 --------------------------------------------------------------------------------------------------------------------------------
@@ -130,6 +131,7 @@ sampleuser
 First, let's check the properties of the 'sampleuser' login from server principals:
 ```bash
 kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q "SELECT name, type_desc, is_disabled FROM sys.server_principals WHERE name = 'sampleuser';" -C
+
 name                                                                                                                             type_desc                                                    is_disabled
 -------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ -----------
 sampleuser                                                                                                                       SQL_LOGIN                                                              0
@@ -167,11 +169,11 @@ db_owner
 
 Finally, let's try to connect to the database using the 'sampleuser' login:
 ```bash
-kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sampleuser -P NewComplexP@ssw0rd123$ -Q "SELECT DB_NAME();" -C
+kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sampleuser -P $APP_PASSWORD -Q "SELECT DB_NAME();" -C
 ```
 After running these commands, the 'sampleuser' should be able to log in to the MySampleDB database. To test this, you can try:
 ```bash
-kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sampleuser -P NewComplexP@ssw0rd123$ -d MySampleDB -Q "SELECT DB_NAME() AS [Current Database];" -C
+kubectl exec -it $(kubectl get pods -l app=mssql -o jsonpath="{.items[0].metadata.name}") -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sampleuser -P $APP_PASSWORD -d MySampleDB -Q "SELECT DB_NAME() AS [Current Database];" -C
 
 Current Database
 --------------------------------------------------------------------------------------------------------------------------------
