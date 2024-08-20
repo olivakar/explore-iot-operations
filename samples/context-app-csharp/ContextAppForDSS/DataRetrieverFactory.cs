@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,7 @@ namespace ContextualDataIngestor
             switch (endpointType)
             {
                 case DataSourceType.Sql:
+                    Console.WriteLine("Inside SQL Block. Creating Auth");
                     IAuthStrategy sqlAuthStrategy = CreateAuthStrategy(parameters);
                     var retrievalReq = new SqlRetrievalConfig
                     {
@@ -21,6 +23,7 @@ namespace ContextualDataIngestor
                         DatabaseName = parameters["SqlDatabaseName"] ?? throw new ArgumentException("Database name variable is not set for SQL."),
                         TableName = parameters["SqlTableName"] ?? throw new ArgumentException("Table variable is not set for SQL.")
                     };
+                    Console.WriteLine("Inside SQL Block. Creating Retriever");
                     return new SqlDataRetriever(
                         retrievalReq,
                         sqlAuthStrategy

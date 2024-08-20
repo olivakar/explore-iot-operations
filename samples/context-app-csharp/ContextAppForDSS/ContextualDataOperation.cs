@@ -23,8 +23,9 @@ namespace ContextAppForDSS
 
         public async Task PopulateContextualDataAsync()
         {
-            
+
             // MQTT Communication
+            Console.WriteLine("Cretaing MQTT client");
             await using MqttSessionClient mqttClient = await SetupMqttClient();
             IStateStoreClient stateStoreClient = new StateStoreClient(mqttClient);
 
