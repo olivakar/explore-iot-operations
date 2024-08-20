@@ -60,29 +60,16 @@ spec:
         volumeMounts:
         - name: mssqldb
           mountPath: /var/opt/mssql
-        - name: mssql-config
+        - name: mssql-config-init
           mountPath: /usr/config
-        command: ["/bin/bash"]
-        args: 
-        - "-c"
-        - |
-          cp /usr/config/mssql.conf /var/opt/mssql/mssql.conf
-          /opt/mssql/bin/sqlservr &
-          pid=$!
-          sleep 60
-          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -v APP_USER=$APP_USER,APP_PASSWORD=$APP_PASSWORD -i /usr/config/setup.sql -C
-          if [ $? -ne 0 ]; then
-            echo "Setup script failed"
-            exit 1
-          fi
-          wait $pid
+        command: ["/bin/bash", "/usr/config/init.sh"]
       volumes:
       - name: mssqldb
         persistentVolumeClaim:
           claimName: mssql-data
-      - name: mssql-config
+      - name: mssql-config-init
         configMap:
-          name: mssql-config
+          name: mssql-config-init
 ---
 apiVersion: v1
 kind: Service

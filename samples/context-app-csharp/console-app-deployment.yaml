@@ -6,10 +6,10 @@ type: Opaque
 data:
   username: aHA=  # Base64 encoded username
   password: YWxvaG9tb3Jh  # Base64 encoded password
-  sqlpassword: WW91clN0cm9uZ1Bhc3N3b3JkMTIzIQ==  # Base64 encoded "YourStrongPassword123!"
-  sqlusername: c2E= 
-  sqlusername2: c2FtcGxldXNlcg==                    # Base64 encoded "sampleuser"
-  sqlpassword2: c2FtcGxlcGFzc3dvcmQ=            # Base64 encoded "samplepassword"
+  sqlusernameadmin: c2E=
+  sqlpasswordadmin: WW91clN0cm9uZ1Bhc3N3b3JkMTIzIQ==  # Base64 encoded "YourStrongPassword123!"
+  sqlusername: c2FtcGxldXNlcg==  # This is the base64 encoded version of 'sampleuser'
+  sqlpassword: TmV3Q29tcGxleFBAc3N3MHJkMTIzJA==  # This is the base64 encoded version of 'NewComplexP@ssw0rd123$'
 ---
 apiVersion: apps/v1
 kind: Deployment

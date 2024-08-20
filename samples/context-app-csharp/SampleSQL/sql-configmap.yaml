@@ -4,9 +4,15 @@ metadata:
   name: mssql-config
 data:
   setup.sql: |
+    PRINT 'Starting setup script';
     IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'MySampleDB')
     BEGIN
         CREATE DATABASE MySampleDB;
+        PRINT 'Created MySampleDB';
+    END
+    ELSE
+    BEGIN
+        PRINT 'MySampleDB already exists';
     END
     GO
     USE MySampleDB;
@@ -27,15 +33,44 @@ data:
             ('fr', 0.60, 0.85, 0.75, 0.45),
             ('jp', 0.53, 0.83, 0.73, 0.43),
             ('uk', 0.51, 0.81, 0.71, 0.41);
+        PRINT 'Created and populated CountryMeasurements table';
+    END
+    ELSE
+    BEGIN
+        PRINT 'CountryMeasurements table already exists';
     END
     GO
-    IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$(APP_USER)')
+    USE [master];
+    GO
+    PRINT 'Attempting to create login for $(APP_USER)';
+    IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(APP_USER)')
     BEGIN
         CREATE LOGIN [$(APP_USER)] WITH PASSWORD = '$(APP_PASSWORD)';
-        CREATE USER [$(APP_USER)] FOR LOGIN [$(APP_USER)];
-        ALTER ROLE db_owner ADD MEMBER [$(APP_USER)];
+        PRINT 'Created login for $(APP_USER)';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Login for $(APP_USER) already exists';
     END
     GO
+    USE [MySampleDB];
+    GO
+    PRINT 'Attempting to create user for $(APP_USER)';
+    IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$(APP_USER)')
+    BEGIN
+        CREATE USER [$(APP_USER)] FOR LOGIN [$(APP_USER)];
+        ALTER ROLE db_owner ADD MEMBER [$(APP_USER)];
+        PRINT 'Created user for $(APP_USER) and added to db_owner role';
+    END
+    ELSE
+    BEGIN
+        PRINT 'User for $(APP_USER) already exists';
+    END
+    GO
+    GRANT CONNECT SQL TO [$(APP_USER)];
+    PRINT 'Granted CONNECT SQL to $(APP_USER)';
+    GO
+    PRINT 'Setup script completed';
   mssql.conf: |
     [network]
     forceencryption = 0

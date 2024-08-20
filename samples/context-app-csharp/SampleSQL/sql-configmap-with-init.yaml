@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mssql-config-init
+data:
+  setup.sql: |
+    IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'MySampleDB')
+    BEGIN
+        CREATE DATABASE MySampleDB;
+    END
+    GO
+    USE MySampleDB;
+    GO
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CountryMeasurements')
+    BEGIN
+        CREATE TABLE CountryMeasurements (
+            ID INT PRIMARY KEY IDENTITY(1,1),
+            Country CHAR(2),
+            Viscosity DECIMAL(3,2),
+            Sweetness DECIMAL(3,2),
+            ParticleSize DECIMAL(3,2),
+            Overall DECIMAL(3,2)
+        );
+        INSERT INTO CountryMeasurements (Country, Viscosity, Sweetness, ParticleSize, Overall)
+        VALUES
+            ('us', 0.50, 0.80, 0.70, 0.40),
+            ('fr', 0.60, 0.85, 0.75, 0.45),
+            ('jp', 0.53, 0.83, 0.73, 0.43),
+            ('uk', 0.51, 0.81, 0.71, 0.41);
+    END
+    GO
+    USE [master];
+    GO
+    IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '$(APP_USER)')
+    BEGIN
+        CREATE LOGIN [$(APP_USER)] WITH PASSWORD = '$(APP_PASSWORD)';
+    END
+    GO
+    USE [MySampleDB];
+    GO
+    IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$(APP_USER)')
+    BEGIN
+        CREATE USER [$(APP_USER)] FOR LOGIN [$(APP_USER)];
+        ALTER ROLE db_owner ADD MEMBER [$(APP_USER)];
+    END
+    GO
+    GRANT CONNECT SQL TO [$(APP_USER)];
+    GO
+  mssql.conf: |
+    [network]
+    forceencryption = 0
+    trustservercertificate = 1
+  init.sh: |
+    #!/bin/bash
+
+    echo "Starting initialization script"
+    echo "Current directory: $(pwd)"
+    echo "Contents of /var/opt/mssql:"
+    ls -la /var/opt/mssql
+    echo "Contents of /usr/config:"
+    ls -la /usr/config
+    echo "Available memory:"
+    free -m
+    echo "Available disk space:"
+    df -h
+
+    # Start SQL Server
+    /opt/mssql/bin/sqlservr &
+    sqlservr_pid=$!
+
+    # Wait for SQL Server to start up
+    attempt=0
+    max_attempts=60
+    while ! /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q "SELECT 1" &> /dev/null
+    do
+        attempt=$((attempt+1))
+        if [ $attempt -gt $max_attempts ]; then
+            echo "SQL Server failed to start after $max_attempts attempts. Exiting."
+            exit 1
+        fi
+        echo "Attempt $attempt: Waiting for SQL Server to start up..."
+        sleep 5
+    done
+
+    echo "SQL Server started successfully"
+
+    # Function to run setup script
+    run_setup_script() {
+        /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/config/setup.sql
+    }
+
+    # Keep trying to run the setup script until it succeeds
+    setup_attempt=0
+    max_setup_attempts=10
+    until run_setup_script
+    do
+        setup_attempt=$((setup_attempt+1))
+        if [ $setup_attempt -gt $max_setup_attempts ]; then
+            echo "Setup script failed after $max_setup_attempts attempts. Exiting."
+            exit 1
+        fi
+        echo "Setup script failed, retrying in 5 seconds... (Attempt $setup_attempt)"
+        sleep 5
+    done
+
+    echo "Setup script completed successfully"
+
+    # Monitor SQL Server process
+    while kill -0 $sqlservr_pid 2> /dev/null; do
+        sleep 5
+    done
+
+    echo "SQL Server process has ended. Exiting."
