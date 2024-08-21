@@ -9,5 +9,5 @@ data:
   AUTH_TYPE: "httpbasic"
   ENDPOINT_TYPE: "http"
   DSS_KEY: "quality"
-  MQTT_HOST: "10.10.10.10" # The ip of the BROKER API. Replace with your own value.
+  MQTT_HOST: "10.43.210.148" # The ip of the BROKER API. Replace with your own value.
   MQTT_CLIENT_ID: "console-app" # The client ID of the MQTT client. Replace with your own value.

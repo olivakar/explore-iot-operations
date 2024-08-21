@@ -18,15 +18,18 @@ namespace ContextualDataIngestor
                    ? parsedType
                    : throw new ArgumentException("Invalid or missing ENDPOINT_TYPE environment variable");
 
+            Console.WriteLine("Reading parameters");
             Dictionary<string, string> parameters = CreateParametersFromEnvironmentVariables();
+            Console.WriteLine("Creating retriever");
             using IDataRetriever dataRetriever = DataRetrieverFactory.CreateDataRetriever(dataSourceType, parameters);
-
+            Console.WriteLine("Reading operation");
             ContextualDataOperation operation = new ContextualDataOperation(dataRetriever, parameters, logger);
             await operation.PopulateContextualDataAsync();
         }
 
         public static Dictionary<string, string> CreateParametersFromEnvironmentVariables()
         {
+
             var parameters = new Dictionary<string, string>
             {
                 { "HttpBaseURL", Environment.GetEnvironmentVariable("HTTP_BASE_URL") ?? string.Empty },
@@ -37,7 +40,10 @@ namespace ContextualDataIngestor
                 { "IntervalSecs", Environment.GetEnvironmentVariable("REQUEST_INTERVAL_SECONDS") ?? string.Empty },
                 { "DssKey", Environment.GetEnvironmentVariable("DSS_KEY") ?? string.Empty },
                 { "MqttHost", Environment.GetEnvironmentVariable("MQTT_HOST") ?? string.Empty },
-                { "MqttClientId", Environment.GetEnvironmentVariable("MQTT_CLIENT_ID") ?? "someClientId"}
+                { "MqttClientId", Environment.GetEnvironmentVariable("MQTT_CLIENT_ID") ?? "someClientId"},
+                { "UseTls", Environment.GetEnvironmentVariable("USE_TLS") ?? "false"},
+                { "SatTokenPath", Environment.GetEnvironmentVariable("SAT_TOKEN_PATH") ?? string.Empty},
+                { "CaFilePath", Environment.GetEnvironmentVariable("CA_FILE_PATH") ?? string.Empty},
             };
 
             return parameters;
