@@ -56,6 +56,13 @@ spec:
           value: {{ .Values.x509.certPath }}
         - name: CLIENT_KEY_FILE
           value: {{ .Values.x509.keyPath }}
+        {{- if .Values.x509.passwordEnabled }}
+        - name: CLIENT_KEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.x509.secretName }}
+              key: x509_password
+        {{- end }}
         {{- end }}
         volumeMounts:
         {{- if .Values.useTLS }}

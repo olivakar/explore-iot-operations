@@ -1,15 +1,14 @@
-# values.yaml
 replicaCount: 1
+
 image:
-  repository: dockeroliva/context-app-for-dss
-  tag: x4
+  repository: my-registry/context-app-for-dss
+  tag: latest
   pullPolicy: Always
 
 endpointType: "http"  # "http" or "sql"
 authType: "httpbasic"  # "httpbasic" or "sqlbasic"
-useTLS: "true"
-# Choose between 'sat' or 'x509' for client authentication
-appAuthType: "sat"
+useTLS: true
+clientAuthMethod: "sat"  # "sat" or "x509"
 
 sat:
   tokenPath: "/app/secrets/sat_token"
@@ -19,6 +18,7 @@ x509:
   certPath: "/etc/mqtt-certs/x509.crt"
   keyPath: "/etc/mqtt-certs/x509.key"
   secretName: x509-secret
+  passwordEnabled: true
 
 volumes:
   caCert:
@@ -35,8 +35,8 @@ config:
   sqlDbName: "MySampleDB"
   sqlTableName: "CountryMeasurements"
 
-secrets:
+  secrets:
   httpUsername: "hp"
   httpPassword: "alohomora"
-  sqlUsername: "sa"s
+  sqlUsername: "sa"
   sqlPassword: "MyVeryStrongPassword@123" 

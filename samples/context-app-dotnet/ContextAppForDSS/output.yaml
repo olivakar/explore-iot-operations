@@ -1,0 +1,79 @@
+---
+# Source: my-console-app/templates/secret.yaml
+# templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: console-app-secret
+type: Opaque
+data:
+  httpusername: ""
+  httppassword: ""
+---
+# Source: my-console-app/templates/configmap.yaml
+# templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: console-app-config
+data:
+  # Add your ConfigMap data here
+---
+# Source: my-console-app/templates/deployment.yaml
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: console-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: console-app-deployment
+  template:
+    metadata:
+      labels:
+        app: console-app-deployment
+    spec:
+      containers:
+      - name: console-app-deployment
+        image: "dockeroliva/context-app-for-dss:x4:latest"
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: console-app-config
+        env:
+        - name: HTTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: console-app-secret
+              key: httpusername
+        - name: HTTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: console-app-secret
+              key: httppassword
+        - name: CA_FILE_PATH
+          value: "/app/certs/cafile.crt"
+        - name: SAT_TOKEN_PATH
+          value: /app/secrets/sat_token
+        volumeMounts:
+        - name: ca-cert-file
+          mountPath: /app/certs
+          readOnly: true
+        - name: sat-token
+          mountPath: /app/secrets
+          readOnly: true
+      volumes:
+      - name: ca-cert-file
+        secret:
+          secretName: test-ca
+          items:
+          - key: tls.crt
+            path: cafile.crt
+      - name: sat-token
+        secret:
+          secretName: sat-token-secret
+          items:
+          - key: token
+            path: sat_token
