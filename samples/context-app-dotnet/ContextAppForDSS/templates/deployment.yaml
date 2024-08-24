@@ -21,7 +21,7 @@ spec:
         - configMapRef:
             name: {{ .Values.configMap.name }}
         env:
-        {{- if eq .Values.secret.credentialType "http" }}
+        {{- if eq .Values.secret.endpointType "http" }}
         - name: HTTP_USERNAME
           valueFrom:
             secretKeyRef:
@@ -32,7 +32,7 @@ spec:
             secretKeyRef:
               name: {{ .Values.secret.name }}
               key: httppassword
-        {{- else if eq .Values.secret.credentialType "sql" }}
+        {{- else if eq .Values.secret.endpointType "sql" }}
         - name: SQL_USERNAME
           valueFrom:
             secretKeyRef:

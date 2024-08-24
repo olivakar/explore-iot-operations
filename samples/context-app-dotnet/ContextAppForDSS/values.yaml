@@ -12,7 +12,7 @@ configMap:
 secret:
   name: console-app-secret
   # Choose between 'http' or 'sql'
-  credentialType: "http"
+  endpointType: "http"
   http:
     username: ""
     password: ""
