@@ -21,6 +21,7 @@ spec:
         - configMapRef:
             name: {{ .Values.configMap.name }}
         env:
+        {{- if eq .Values.secret.credentialType "http" }}
         - name: HTTP_USERNAME
           valueFrom:
             secretKeyRef:
@@ -31,11 +32,18 @@ spec:
             secretKeyRef:
               name: {{ .Values.secret.name }}
               key: httppassword
+        {{- else if eq .Values.secret.credentialType "sql" }}
+        - name: SQL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: sqlusername
         - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.secret.name }}
               key: sqlpassword
+        {{- end }}
         - name: CA_FILE_PATH
           value: "/app/certs/cafile.crt"
         {{- if eq .Values.authType "sat" }}
@@ -46,13 +54,6 @@ spec:
           value: {{ .Values.x509.certPath }}
         - name: CLIENT_KEY_FILE
           value: {{ .Values.x509.keyPath }}
-        {{- if .Values.x509.passwordEnabled }}
-        - name: CLIENT_KEY_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.x509.secretName }}
-              key: x509_password
-        {{- end }}
         {{- end }}
         volumeMounts:
         - name: ca-cert-file

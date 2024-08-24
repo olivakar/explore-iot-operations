@@ -11,9 +11,14 @@ configMap:
 
 secret:
   name: console-app-secret
-  httpUsername: ""
-  httpPassword: ""
-  sqlPassword: ""
+  # Choose between 'http' or 'sql'
+  credentialType: "http"
+  http:
+    username: ""
+    password: ""
+  sql:
+    username: "sa"
+    password: ""
 
 # Choose between 'sat' or 'x509'
 authType: "sat"
@@ -26,9 +31,6 @@ x509:
   certPath: "/etc/mqtt-certs/x509.crt"
   keyPath: "/etc/mqtt-certs/x509.key"
   secretName: x509-secret
-  # Set to true if x509 password is needed
-  passwordEnabled: false
-  password: ""
 
 volumes:
   caCert:
