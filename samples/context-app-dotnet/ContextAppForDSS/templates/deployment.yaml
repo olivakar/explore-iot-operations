@@ -15,80 +15,86 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-deployment
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         envFrom:
         - configMapRef:
-            name: {{ .Values.configMap.name }}
+            name: {{ .Release.Name }}-config
         env:
-        {{- if eq .Values.secret.endpointType "http" }}
+        {{- if eq .Values.endpointType "http" }}
         - name: HTTP_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.secret.name }}
+              name: {{ .Release.Name }}-secret
               key: httpusername
         - name: HTTP_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.secret.name }}
+              name: {{ .Release.Name }}-secret
               key: httppassword
-        {{- else if eq .Values.secret.endpointType "sql" }}
+        {{- else if eq .Values.endpointType "sql" }}
         - name: SQL_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.secret.name }}
+              name: {{ .Release.Name }}-secret
               key: sqlusername
         - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.secret.name }}
+              name: {{ .Release.Name }}-secret
               key: sqlpassword
         {{- end }}
+        {{- if .Values.useTLS }}
         - name: CA_FILE_PATH
           value: "/app/certs/cafile.crt"
-        {{- if eq .Values.appAuthType "sat" }}
+        {{- end }}
+        {{- if eq .Values.clientAuthMethod "sat" }}
         - name: SAT_TOKEN_PATH
           value: {{ .Values.sat.tokenPath }}
-        {{- else if eq .Values.appAuthType "x509" }}
+        {{- else if eq .Values.clientAuthMethod "x509" }}
         - name: CLIENT_CERT_FILE
           value: {{ .Values.x509.certPath }}
         - name: CLIENT_KEY_FILE
           value: {{ .Values.x509.keyPath }}
         {{- end }}
         volumeMounts:
+        {{- if .Values.useTLS }}
         - name: ca-cert-file
           mountPath: /app/certs
           readOnly: true
-        {{- if eq .Values.appAuthType "sat" }}
+        {{- end }}
+        {{- if eq .Values.clientAuthMethod "sat" }}
         - name: sat-token
-          mountPath: /app/secrets
+          mountPath: {{ dir .Values.sat.tokenPath }}
           readOnly: true
-        {{- else if eq .Values.appAuthType "x509" }}
+        {{- else if eq .Values.clientAuthMethod "x509" }}
         - name: client-certs
-          mountPath: /etc/mqtt-certs
+          mountPath: {{ dir .Values.x509.certPath }}
           readOnly: true
         {{- end }}
       volumes:
+      {{- if .Values.useTLS }}
       - name: ca-cert-file
         secret:
           secretName: {{ .Values.volumes.caCert.secretName }}
           items:
           - key: tls.crt
             path: cafile.crt
-      {{- if eq .Values.appAuthType "sat" }}
+      {{- end }}
+      {{- if eq .Values.clientAuthMethod "sat" }}
       - name: sat-token
         secret:
           secretName: {{ .Values.sat.secretName }}
           items:
           - key: token
-            path: sat_token
-      {{- else if eq .Values.appAuthType "x509" }}
+            path: {{ base .Values.sat.tokenPath }}
+      {{- else if eq .Values.clientAuthMethod "x509" }}
       - name: client-certs
         secret:
           secretName: {{ .Values.x509.secretName }}
           items:
           - key: x509.crt
-            path: x509.crt
+            path: {{ base .Values.x509.certPath }}
           - key: x509.key
-            path: x509.key
+            path: {{ base .Values.x509.keyPath }}
       {{- end }}
