@@ -15,11 +15,21 @@ secret:
   httpPassword: ""
   sqlPassword: ""
 
+# Choose between 'sat' or 'x509'
+authType: "sat"
+
 sat:
   tokenPath: "/app/secrets/sat_token"
+  secretName: sat-token-secret
+
+x509:
+  certPath: "/etc/mqtt-certs/x509.crt"
+  keyPath: "/etc/mqtt-certs/x509.key"
+  secretName: x509-secret
+  # Set to true if x509 password is needed
+  passwordEnabled: false
+  password: ""
 
 volumes:
   caCert:
     secretName: test-ca
-  satToken:
-    secretName: sat-token-secret
