@@ -1,0 +1,6 @@
+# Chart.yaml
+apiVersion: v2
+name: my-console-app
+description: A Helm chart for the Console App Deployment
+version: 0.1.0
+type: application

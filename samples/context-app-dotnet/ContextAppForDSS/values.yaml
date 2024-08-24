@@ -1,0 +1,25 @@
+# values.yaml
+replicaCount: 1
+image:
+  repository: my-registry/context-app-for-dss
+  tag: latest
+  pullPolicy: Always
+
+configMap:
+  name: console-app-config
+  # Add your ConfigMap data here
+
+secret:
+  name: console-app-secret
+  httpUsername: ""
+  httpPassword: ""
+  sqlPassword: ""
+
+sat:
+  tokenPath: "/app/secrets/sat_token"
+
+volumes:
+  caCert:
+    secretName: test-ca
+  satToken:
+    secretName: sat-token-secret

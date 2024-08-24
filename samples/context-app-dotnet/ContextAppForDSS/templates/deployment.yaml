@@ -1,0 +1,62 @@
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-deployment
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-deployment
+    spec:
+      containers:
+      - name: {{ .Release.Name }}-deployment
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.configMap.name }}
+        env:
+        - name: HTTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: httpusername
+        - name: HTTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: httppassword
+        - name: SQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: sqlpassword
+        - name: CA_FILE_PATH
+          value: "/app/certs/cafile.crt"
+        - name: SAT_TOKEN_PATH
+          value: {{ .Values.sat.tokenPath }}
+        volumeMounts:
+        - name: ca-cert-file
+          mountPath: /app/certs
+          readOnly: true
+        - name: sat-token
+          mountPath: /app/secrets
+          readOnly: true
+      volumes:
+      - name: ca-cert-file
+        secret:
+          secretName: {{ .Values.volumes.caCert.secretName }}
+          items:
+          - key: tls.crt
+            path: cafile.crt
+      - name: sat-token
+        secret:
+          secretName: {{ .Values.volumes.satToken.secretName }}
+          items:
+          - key: token
+            path: sat_token
