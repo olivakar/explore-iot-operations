@@ -79,6 +79,8 @@ namespace ContextAppForDSS
                 _logger.LogInformation("Using TLS");
 
                 string caFilePath = _parameters["CaFilePath"] ?? throw new ArgumentException("Certificate authority file path is not set");
+                //Console.WriteLine("read ca file to see contents");
+                //Console.WriteLine(File.ReadAllText(caFilePath).Trim());
 
                 bool hasSatToken = !string.IsNullOrEmpty(_parameters["SatTokenPath"]) && File.Exists(_parameters["SatTokenPath"]);
                 bool hasClientCert = !string.IsNullOrEmpty(_parameters["ClientCertFilePath"]) && File.Exists(_parameters["ClientCertFilePath"]);
@@ -89,6 +91,8 @@ namespace ContextAppForDSS
                 {
                     _logger.LogInformation("SAT Token path is set and will be used for authentication.");
                     string tokenPath = _parameters["SatTokenPath"];
+                    //Console.WriteLine("read token to see contents");
+                    //Console.WriteLine(File.ReadAllText(tokenPath).Trim());
                     connectionSettings = new(host) { TcpPort = 8883, ClientId = clientId, UseTls = true, CaFile = caFilePath, SatAuthFile = tokenPath };
                 }
                 else if (hasClientCert && hasClientCertKey)
@@ -101,7 +105,21 @@ namespace ContextAppForDSS
                     string clientCertFile = _parameters["ClientCertFilePath"];
                     string clientKeyFile = _parameters["ClientCertKeyFilePath"];
                     string keyPassword = _parameters["ClientKeyPassword"] ?? string.Empty;
-
+                    Console.WriteLine("In Operation Certificate");
+                    Console.WriteLine(clientCertFile);
+                    Console.WriteLine("In Operation Key");
+                    Console.WriteLine(clientKeyFile);
+                    Console.WriteLine("In Operation Password");
+                    Console.WriteLine(keyPassword);
+                    Console.WriteLine("In Operation read client cert to see contents");
+                    Console.WriteLine(File.ReadAllText(clientCertFile).Trim());
+                    Console.WriteLine("In Operation read client key to see contents");
+                    Console.WriteLine(File.ReadAllText(clientKeyFile).Trim());
+                    if (hasClientKeyPassword)
+                    {
+                        Console.WriteLine("In Operation read client key pwd to see contents");
+                        Console.WriteLine(keyPassword);
+                    }
                     connectionSettings = new(host) { TcpPort = 8883, ClientId = clientId, UseTls = true, CaFile = caFilePath, CertFile = clientCertFile, KeyFile = clientKeyFile, KeyFilePassword = keyPassword };
                 }
                 else
