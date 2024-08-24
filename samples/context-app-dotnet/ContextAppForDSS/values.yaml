@@ -1,27 +1,15 @@
 # values.yaml
 replicaCount: 1
 image:
-  repository: my-registry/context-app-for-dss
-  tag: latest
+  repository: dockeroliva/context-app-for-dss
+  tag: x4
   pullPolicy: Always
 
-configMap:
-  name: console-app-config
-  # Add your ConfigMap data here
-
-secret:
-  name: console-app-secret
-  # Choose between 'http' or 'sql'
-  endpointType: "http"
-  http:
-    username: ""
-    password: ""
-  sql:
-    username: "sa"
-    password: ""
-
-# Choose between 'sat' or 'x509'
-authType: "sat"
+endpointType: "http"  # "http" or "sql"
+authType: "httpbasic"  # "httpbasic" or "sqlbasic"
+useTLS: "true"
+# Choose between 'sat' or 'x509' for client authentication
+appAuthType: "sat"
 
 sat:
   tokenPath: "/app/secrets/sat_token"
@@ -35,3 +23,20 @@ x509:
 volumes:
   caCert:
     secretName: test-ca
+
+config:
+  requestIntervalSeconds: "10"
+  dssKey: "quality"
+  mqttHost: "10.10.10.10"
+  mqttClientId: "console-app"
+  httpBaseUrl: "http://my-backend-api-s.default.svc.cluster.local:80"
+  httpPath: "contexts/quality"
+  sqlServerName: "sqlserver-service"
+  sqlDbName: "MySampleDB"
+  sqlTableName: "CountryMeasurements"
+
+secrets:
+  httpUsername: "hp"
+  httpPassword: "alohomora"
+  sqlUsername: "sa"s
+  sqlPassword: "MyVeryStrongPassword@123" 

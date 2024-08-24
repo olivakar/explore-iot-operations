@@ -46,10 +46,10 @@ spec:
         {{- end }}
         - name: CA_FILE_PATH
           value: "/app/certs/cafile.crt"
-        {{- if eq .Values.authType "sat" }}
+        {{- if eq .Values.appAuthType "sat" }}
         - name: SAT_TOKEN_PATH
           value: {{ .Values.sat.tokenPath }}
-        {{- else if eq .Values.authType "x509" }}
+        {{- else if eq .Values.appAuthType "x509" }}
         - name: CLIENT_CERT_FILE
           value: {{ .Values.x509.certPath }}
         - name: CLIENT_KEY_FILE
@@ -59,11 +59,11 @@ spec:
         - name: ca-cert-file
           mountPath: /app/certs
           readOnly: true
-        {{- if eq .Values.authType "sat" }}
+        {{- if eq .Values.appAuthType "sat" }}
         - name: sat-token
           mountPath: /app/secrets
           readOnly: true
-        {{- else if eq .Values.authType "x509" }}
+        {{- else if eq .Values.appAuthType "x509" }}
         - name: client-certs
           mountPath: /etc/mqtt-certs
           readOnly: true
@@ -75,14 +75,14 @@ spec:
           items:
           - key: tls.crt
             path: cafile.crt
-      {{- if eq .Values.authType "sat" }}
+      {{- if eq .Values.appAuthType "sat" }}
       - name: sat-token
         secret:
           secretName: {{ .Values.sat.secretName }}
           items:
           - key: token
             path: sat_token
-      {{- else if eq .Values.authType "x509" }}
+      {{- else if eq .Values.appAuthType "x509" }}
       - name: client-certs
         secret:
           secretName: {{ .Values.x509.secretName }}
