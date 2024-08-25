@@ -1,6 +1,6 @@
 # Chart.yaml
 apiVersion: v2
 name: my-console-app
-description: A Helm chart for the Console App Deployment
+description: A Helm chart for the Contextual Application to store data in DSSs
 version: 0.1.0
 type: application
