@@ -1,0 +1,37 @@
+# values.yaml
+replicaCount: 1
+image:
+  repository: dockeroliva/context-app-for-dss:x4
+  tag: latest
+  pullPolicy: Always
+
+configMap:
+  name: console-app-config
+  # Add your ConfigMap data here
+
+secret:
+  name: console-app-secret
+  # Choose between 'http' or 'sql'
+  endpointType: "http"
+  http:
+    username: ""
+    password: ""
+  sql:
+    username: "sa"
+    password: ""
+
+# Choose between 'sat' or 'x509'
+authType: "sat"
+
+sat:
+  tokenPath: "/app/secrets/sat_token"
+  secretName: sat-token-secret
+
+x509:
+  certPath: "/etc/mqtt-certs/x509.crt"
+  keyPath: "/etc/mqtt-certs/x509.key"
+  secretName: x509-secret
+
+volumes:
+  caCert:
+    secretName: test-ca
