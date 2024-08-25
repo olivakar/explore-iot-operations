@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: my-backend-api-d
-        image: my-registry/my-backend-api
+        image: dockeroliva/my-backend-api:v1
 ---
 apiVersion: v1
 kind: Service

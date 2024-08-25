@@ -4,55 +4,58 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: console-app-secret
+  name: context-app-secret
 type: Opaque
 data:
-  httpusername: ""
-  httppassword: ""
+  sqlpassword: "TXlFeHRyZW1lbHlTdHJvbmdwYXNzd29yZEAxMjM="
 ---
 # Source: my-console-app/templates/configmap.yaml
 # templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: console-app-config
+  name: context-app-config
 data:
-  # Add your ConfigMap data here
+  ENDPOINT_TYPE: "sql"
+  AUTH_TYPE: "sqlbasic"
+  REQUEST_INTERVAL_SECONDS: "10"
+  DSS_KEY: "quality"
+  MQTT_HOST: "10.43.91.134"
+  MQTT_CLIENT_ID: "app-id"
+  SQL_SERVER_NAME: "sqlserver-service"
+  SQL_DB_NAME: "MySampleDB"
+  SQL_TABLE_NAME: "CountryMeasurements"
+  USE_TLS: "true"
 ---
 # Source: my-console-app/templates/deployment.yaml
 # templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: console-app-deployment
+  name: context-app-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: console-app-deployment
+      app: context-app-deployment
   template:
     metadata:
       labels:
-        app: console-app-deployment
+        app: context-app-deployment
     spec:
       containers:
-      - name: console-app-deployment
-        image: "dockeroliva/context-app-for-dss:x4:latest"
+      - name: context-app-deployment
+        image: "dockeroliva/context-app-for-dss:x4"
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: console-app-config
+            name: context-app-config
         env:
-        - name: HTTP_USERNAME
+        - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: console-app-secret
-              key: httpusername
-        - name: HTTP_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: console-app-secret
-              key: httppassword
+              name: context-app-secret
+              key: sqlpassword
         - name: CA_FILE_PATH
           value: "/app/certs/cafile.crt"
         - name: SAT_TOKEN_PATH

@@ -1,8 +1,8 @@
 replicaCount: 1
 
 image:
-  repository: my-registry/context-app-for-dss
-  tag: latest
+  repository: dockeroliva/context-app-for-dss
+  tag: x4
   pullPolicy: Always
 
 endpointType: "http"  # "http" or "sql"
@@ -18,7 +18,7 @@ x509:
   certPath: "/etc/mqtt-certs/x509.crt"
   keyPath: "/etc/mqtt-certs/x509.key"
   secretName: x509-secret
-  passwordEnabled: true
+  passwordEnabled: false
 
 volumes:
   caCert:
@@ -27,16 +27,15 @@ volumes:
 config:
   requestIntervalSeconds: "10"
   dssKey: "quality"
-  mqttHost: "10.10.10.10"
-  mqttClientId: "console-app"
+  mqttHost: "10.43.91.134"
+  mqttClientId: "app-id"
   httpBaseUrl: "http://my-backend-api-s.default.svc.cluster.local:80"
   httpPath: "contexts/quality"
   sqlServerName: "sqlserver-service"
   sqlDbName: "MySampleDB"
   sqlTableName: "CountryMeasurements"
 
-  secrets:
+secrets:
   httpUsername: "hp"
   httpPassword: "alohomora"
-  sqlUsername: "sa"
-  sqlPassword: "MyVeryStrongPassword@123" 
+  sqlPassword: "MyExtremelyStrongpassword@123" 
